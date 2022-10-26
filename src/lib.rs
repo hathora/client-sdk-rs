@@ -7,6 +7,8 @@ use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use tungstenite::{connect, stream::MaybeTlsStream, Message, WebSocket};
 
+use anyhow::{bail, Result};
+
 #[derive(Serialize, Debug)]
 struct InitialState {
     token: String,
@@ -28,38 +30,25 @@ struct Token {
     id: String,
 }
 
-#[derive(Debug)]
-pub struct TokenError;
-
-#[derive(Debug)]
-pub struct WebSocketError;
-
-pub fn login_anonymous(app_id: &str) -> Result<LoginResponse, Box<dyn std::error::Error>> {
+pub fn login_anonymous(app_id: &str) -> Result<LoginResponse> {
     let login_url = format!("https://coordinator.hathora.dev/{app_id}/login/anonymous");
     let client = reqwest::blocking::Client::new();
     let resp: LoginResponse = client.post(login_url).send()?.json()?;
     Ok(resp)
 }
 
-pub fn decode_user_id_without_validating_jwt(token: &str) -> Result<String, TokenError> {
+pub fn decode_user_id_without_validating_jwt(token: &str) -> Result<String> {
     let segments: Vec<&str> = token.split('.').collect();
-    let _id = segments[1];
-
-    match base64::decode_config(segments[1], base64::URL_SAFE_NO_PAD) {
-        Ok(data) => {
-            let string = String::from_utf8(data).expect("base64 output is valid utf8");
-            let token: Token = serde_json::from_str(&string).expect("token JSON is valid");
-            Ok(token.id)
-        }
-        Err(_) => Err(TokenError),
-    }
+    let bytes = base64::decode_config(segments[1], base64::URL_SAFE_NO_PAD)?;
+    let token: Token = serde_json::from_slice(&bytes)?;
+    Ok(token.id)
 }
 
 pub fn create_nonblocking_subscribed_websocket(
     app_id: &str,
     token: &str,
     room_id: &str,
-) -> Result<WebSocket<MaybeTlsStream<TcpStream>>, WebSocketError> {
+) -> Result<WebSocket<MaybeTlsStream<TcpStream>>> {
     let websocket_url = format!("wss://coordinator.hathora.dev/connect/{app_id}");
     let (mut socket, _response) =
         connect(Url::parse(&websocket_url).unwrap()).expect("Can't connect to websockets");
@@ -68,26 +57,16 @@ pub fn create_nonblocking_subscribed_websocket(
         stateId: room_id.to_string(),
     };
     let message = serde_json::to_vec(&initial_state).expect("Serialization should work");
-    match socket.write_message(Message::binary(message)) {
-        Ok(_) => {}
-        Err(e) => {
-            return Err(WebSocketError);
-        }
-    }
-
+    socket.write_message(Message::binary(message))?;
     match socket.get_mut() {
-        MaybeTlsStream::Plain(stream) => {
-            if let Err(e) = stream.set_nonblocking(true) {
-                return Err(WebSocketError);
-            }
+        MaybeTlsStream::Plain(tcp_stream) => {
+            tcp_stream.set_nonblocking(true)?;
         }
         MaybeTlsStream::NativeTls(tls_stream) => {
-            if let Err(e) = tls_stream.get_mut().set_nonblocking(true) {
-                return Err(WebSocketError);
-            }
+            tls_stream.get_mut().set_nonblocking(true)?;
         }
         _ => {
-            return Err(WebSocketError);
+            bail!("Unknown socket type.");
         }
     }
     Ok(socket)
@@ -96,7 +75,6 @@ pub fn create_nonblocking_subscribed_websocket(
 pub fn create_room(app_id: &str, token: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
     let create_url = format!("https://coordinator.hathora.dev/{app_id}/create");
-
     let response: CreateRoomResponse = client
         .post(create_url)
         .header(AUTHORIZATION, token)
@@ -104,6 +82,5 @@ pub fn create_room(app_id: &str, token: &str) -> Result<String, Box<dyn std::err
         .body(vec![])
         .send()?
         .json()?;
-
     Ok(response.stateId)
 }
