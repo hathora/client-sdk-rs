@@ -86,7 +86,7 @@ pub fn create_nonblocking_subscribed_websocket(
     Ok(socket)
 }
 
-pub fn create_room(app_id: &str, token: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub fn create_room(app_id: &str, token: &str) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     let create_url = format!("https://coordinator.hathora.dev/{app_id}/create");
     let response: CreateRoomResponse = client
