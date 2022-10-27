@@ -86,14 +86,14 @@ pub fn create_nonblocking_subscribed_websocket(
     Ok(socket)
 }
 
-pub fn create_room(app_id: &str, token: &str) -> Result<String> {
+pub fn create_room(app_id: &str, token: &str, body: Vec<u8>) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     let create_url = format!("https://coordinator.hathora.dev/{app_id}/create");
     let response: CreateRoomResponse = client
         .post(create_url)
         .header(AUTHORIZATION, token)
         .header(CONTENT_TYPE, "application/octet-stream")
-        .body(vec![])
+        .body(body)
         .send()?
         .json()?;
     Ok(response.stateId)
