@@ -37,6 +37,20 @@ pub fn login_anonymous(app_id: &str) -> Result<LoginResponse> {
     Ok(resp)
 }
 
+pub fn login_nickname(app_id: &str) -> Result<LoginResponse> {
+    let login_url = format!("https://coordinator.hathora.dev/{app_id}/login/nickname");
+    let client = reqwest::blocking::Client::new();
+    let resp: LoginResponse = client.post(login_url).send()?.json()?;
+    Ok(resp)
+}
+
+pub fn login_google(app_id: &str) -> Result<LoginResponse> {
+    let login_url = format!("https://coordinator.hathora.dev/{app_id}/login/google");
+    let client = reqwest::blocking::Client::new();
+    let resp: LoginResponse = client.post(login_url).send()?.json()?;
+    Ok(resp)
+}
+
 pub fn decode_user_id_without_validating_jwt(token: &str) -> Result<String> {
     let segments: Vec<&str> = token.split('.').collect();
     let bytes = base64::decode_config(segments[1], base64::URL_SAFE_NO_PAD)?;
