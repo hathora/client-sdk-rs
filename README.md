@@ -1,5 +1,7 @@
 # Hathora Rust Client SDK
 
+See this client in action here: https://github.com/hathora/topdown-shooter-bevy-client
+
 ## Usage
 
 ```rs
