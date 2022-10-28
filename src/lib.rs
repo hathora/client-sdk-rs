@@ -25,34 +25,34 @@ impl HathoraClient {
         }
     }
 
-    pub fn login_anonymous(&self) -> Result<LoginResponse> {
+    pub fn login_anonymous(&self) -> Result<String> {
         let login_url = format!(
             "https://{}/{}/login/anonymous",
             self.coordinator_host, self.app_id
         );
         let resp: LoginResponse = self.client.post(login_url).send()?.json()?;
-        Ok(resp)
+        Ok(resp.token)
     }
 
-    pub fn login_nickname(&self) -> Result<LoginResponse> {
+    pub fn login_nickname(&self) -> Result<String> {
         let login_url = format!(
             "https://{}/{}/login/nickname",
             self.coordinator_host, self.app_id
         );
         let resp: LoginResponse = self.client.post(login_url).send()?.json()?;
-        Ok(resp)
+        Ok(resp.token)
     }
 
-    pub fn login_google(&self) -> Result<LoginResponse> {
+    pub fn login_google(&self) -> Result<String> {
         let login_url = format!(
             "https://{}/{}/login/google",
             self.coordinator_host, self.app_id
         );
         let resp: LoginResponse = self.client.post(login_url).send()?.json()?;
-        Ok(resp)
+        Ok(resp.token)
     }
 
-    pub fn create_room(&self, token: &str, body: Vec<u8>) -> Result<String> {
+    pub fn create(&self, token: &str, body: Vec<u8>) -> Result<String> {
         let create_url = format!("https://{}/{}/create", self.coordinator_host, self.app_id);
         let response: CreateRoomResponse = self
             .client
