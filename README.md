@@ -1,5 +1,7 @@
 # Hathora Rust Client SDK
 
+![crates.io](https://img.shields.io/crates/v/hathora-client-sdk.svg)
+
 See this client in action here: https://github.com/hathora/topdown-shooter-bevy-client
 
 ## Usage
@@ -27,4 +29,10 @@ match connection
 connection
     .write_message(Message::Binary(b"{ message: \"Hello world\" }".to_vec()))
     .expect("Writing to socket should suceed");
+```
+
+## Publishing
+
+```bash
+cargo publish
 ```
