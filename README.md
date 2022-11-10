@@ -1,6 +1,6 @@
 # Hathora Rust Client SDK
 
-![crates.io](https://img.shields.io/crates/v/hathora-client-sdk.svg)
+<a href="https://crates.io/crates/hathora-client-sdk"><img src="https://img.shields.io/crates/v/hathora-client-sdk.svg" alt="crate version"></a>
 
 See this client in action here: https://github.com/hathora/topdown-shooter-bevy-client
 
