@@ -67,19 +67,27 @@ impl HathoraClient {
         Ok(response.stateId)
     }
 
-    pub fn connect(&self, token: &str, state_id: &str) -> Result<Box<dyn HathoraTransport>> {
+    pub fn connect(
+        &self,
+        token: &str,
+        state_id: &str,
+        transport_type: HathoraTransportType,
+    ) -> Result<Box<dyn HathoraTransport>> {
         let mut transport =
             WebsocketTransport::new(self.app_id.clone(), Some(self.coordinator_host.clone()));
         transport.connect(state_id, token)?;
         Ok(Box::new(transport))
     }
-
     pub fn get_user_from_token(token: &str) -> Result<String> {
         let segments: Vec<&str> = token.split('.').collect();
         let bytes = base64::decode_config(segments[1], base64::URL_SAFE_NO_PAD)?;
         let token: Token = serde_json::from_slice(&bytes)?;
         Ok(token.id)
     }
+}
+
+pub enum HathoraTransportType {
+    WebSocket,
 }
 
 pub trait HathoraTransport {
@@ -180,3 +188,4 @@ pub struct LoginResponse {
 struct Token {
     id: String,
 }
+

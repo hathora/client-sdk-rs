@@ -7,7 +7,7 @@ See this client in action here: https://github.com/hathora/topdown-shooter-bevy-
 ## Usage
 
 ```rs
-let app_id = "e2d8571eb89af72f2abbe909def5f19bc4dad0cd475cce5f5b6e9018017d1f1c".to_string();
+let app_id = "...".to_string();
 let client = HathoraClient::new(app_id, None);
 let token = client
     .login_anonymous()
@@ -16,7 +16,7 @@ let roomId = client
     .create(&token, vec![])
     .expect("Creating a room should succeed");
 let mut transport = client
-    .connect(&token, &roomId)
+    .connect(&token, &roomId, HathoraTransportType::WebSocket)
     .expect("Creating a websocket should succeed.");
 
 let message = transport
